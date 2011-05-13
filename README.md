@@ -35,7 +35,7 @@ Demo
 
 In the `example` directory you'll find a Rails app that just runs. It demonstrates the basic usage of pageless scrolling.
 
-    $ script/server
+    $ rails s
     
 Then just navigate to http://localhost:3000 and enjoy!
 
