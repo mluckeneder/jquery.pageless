@@ -35,18 +35,18 @@
 //
 // Requires: jquery
 //
-// Author: Jean-Sébastien Ney (jeansebastien.ney@gmail.com)
+// Author: Jean-Sébastien Ney (https://github.com/jney)
 //
 // Contributors:
-//   Alexander Lang (langalex)
-//   Lukas Rieder (Overbryd)
+//   Alexander Lang (https://github.com/langalex)
+//   Lukas Rieder (https://github.com/Overbryd)
 //
 // Thanks to:
 //  * codemonky.com/post/34940898
 //  * www.unspace.ca/discover/pageless/
 //  * famspam.com/facebox
 // =======================================================================
- 
+
 (function($) {
   
   var FALSE = !1
@@ -54,6 +54,9 @@
     , element
     , isLoading = FALSE
     , loader
+    , namespace = '.pageless'
+    , SCROLL = 'scroll' + namespace
+    , RESIZE = 'resize' + namespace
     , settings = { container: window
                  , currentPage: 1
                  , distance: 100
@@ -62,7 +65,8 @@
                  , url: location.href
                  , loaderImage: "/images/load.gif"
                  }
-    , container = settings.container;
+    , container
+    , $container;
     
   $.pageless = function(opts) {
     $.isFunction(opts) ? settings.call() : init(opts);
@@ -82,6 +86,9 @@
     settings.inited = TRUE;
     
     if (opts) $.extend(settings, opts);
+    
+    container = settings.container;
+    $container = $(container);
     
     // for accessibility we can keep pagination links
     // but since we have javascript enabled we remove pagination links 
@@ -121,22 +128,26 @@
   // distance to end of the container
   var distanceToBottom = function () {
     return (container === window)
-    ? $(document).height() - $(container).scrollTop() - $(container).height()
-    : $(container)[0].scrollHeight - $(container).scrollTop() - $(container).height();
+         ? $(document).height() 
+         - $container.scrollTop() 
+         - $container.height()
+         : $container[0].scrollHeight 
+         - $container.scrollTop() 
+         - $container.height();
   };
 
   var stopListener = function() {
-    $(container).unbind('.pageless');
+    $container.unbind(namespace);
   };
   
   // * bind a scroll event
   // * trigger is once in case of reload
   var startListener = function() {
-    $(container).bind('scroll.pageless', scroll)
-                .trigger('scroll.pageless');
+    $container.bind(SCROLL+' '+RESIZE, watch)
+              .trigger(SCROLL);
   };
   
-  var scroll = function() {
+  var watch = function() {
     // listener was stopped or we've run out of pages
     if (settings.totalPages <= settings.currentPage) {
       stopListener();
@@ -150,11 +161,22 @@
       loading(TRUE);
       // move to next page
       settings.currentPage++;
-      // set up ajax query params
-      $.extend( settings.params
-              , { page: settings.currentPage });
+
+	  // check if $PAGE$ parameter is contained in the URL
+      var url = settings.url;
+      if(url.indexOf("$PAGE$")){
+       url=url.replace("$PAGE$",settings.currentPage);
+      }
+      else {
+	   	// set up ajax query params
+	      $.extend( settings.params
+	              , { page: settings.currentPage });
+      }
+
+      
+			
       // finally ajax query
-      $.get( settings.url
+      $.get( url
            , settings.params
            , function (data) {
                $.isFunction(settings.scrape) ? settings.scrape(data) : data;
