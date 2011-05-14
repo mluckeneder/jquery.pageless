@@ -161,22 +161,11 @@
       loading(TRUE);
       // move to next page
       settings.currentPage++;
-
-	  // check if $PAGE$ parameter is contained in the URL
-      var url = settings.url;
-      if(url.indexOf("$PAGE$")){
-       url=url.replace("$PAGE$",settings.currentPage);
-      }
-      else {
-	   	// set up ajax query params
-	      $.extend( settings.params
-	              , { page: settings.currentPage });
-      }
-
-      
-			
+      // set up ajax query params
+      $.extend( settings.params
+              , { page: settings.currentPage });
       // finally ajax query
-      $.get( url
+      $.get( settings.url
            , settings.params
            , function (data) {
                $.isFunction(settings.scrape) ? settings.scrape(data) : data;
